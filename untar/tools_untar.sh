@@ -11,16 +11,18 @@ if_help=$1
 
 if [ "$if_help" == "--help" ] || [ "$if_help" == "-h" ]; then
     echo "command list:"
-    echo "  -f file"
-    echo "  -d dir"
+    echo "  -f unzip file"
+    echo "  -d unzip dir"
+    echo "  -s if s is y, so unzip to a fold as same as file name."
     echo "support type: $support_list"
     exit 0
 fi
 
 file=""
 dir=""
+same_name=""
 
-while getopts ":f:d:" opt; do
+while getopts ":f:d:s:" opt; do
     case $opt in
     f)
         file=$OPTARG
@@ -29,6 +31,10 @@ while getopts ":f:d:" opt; do
     d)
         dir=$OPTARG
         echo "unzip dir: $dir"
+        ;;
+    s)
+        same_name=$OPTARG
+        echo "unzip to a fold as same as file name: $same_name"
         ;;
     *)
         echo "unknow arg: $opt"
@@ -53,13 +59,17 @@ if !([ -f "$file" ]); then
     exit 0
 fi
 
-if [ -z "$dir" ]; then
-    echo "dir is empty"
-    exit 0
-fi
-
 file_type="${file#*.}"
+file_name="${file%%.*}"
 
+if ([ "$same_name" == "y" ]); then
+    dir=$file_name
+else
+    if [ -z "$dir" ]; then
+        echo "dir is empty"
+        exit 0
+    fi
+fi
 
 if [[ "$support_list" =~ "$file_type" ]]; then
     if ([ -d "$dir" ]); then
@@ -107,6 +117,5 @@ str="-"
 ScreenLen=$(stty size | awk '{print $2}')
 yes ${str} | sed ''''${ScreenLen}'''q' | tr -d "\n" && echo
 
-echo "$NOW_PATH/$dir/"
 echo "unzip file: $file"
 echo "unzip dir: $dir"
